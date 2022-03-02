@@ -4,7 +4,7 @@ import { terser } from "rollup-plugin-terser";
 // import prettier from "rollup-plugin-prettier";
 // const banner = require('./banner');
 import esbuild from "rollup-plugin-esbuild";
-
+import dts from "rollup-plugin-dts";
 import resolve from "rollup-plugin-node-resolve";
 
 const createBuild = (options) => {
@@ -66,5 +66,28 @@ const createBuild = (options) => {
   };
 };
 
-export default (metadata, configs) =>
-  configs.map((config) => createBuild({ ...metadata, ...config }));
+export default (metadata, configs) => [
+  ...configs.map((config) => createBuild({ ...metadata, ...config })),
+  {
+    plugins: [dts()],
+    input: "src/index.ts",
+    output: {
+      file: `./index.d.ts`,
+      format: "es",
+    },
+    external: (id) => {
+      return !/^[./]/.test(id);
+    },
+  },
+  {
+    plugins: [dts()],
+    input: "src/types.ts",
+    output: {
+      file: `./index.d.ts`,
+      format: "es",
+    },
+    external: (id) => {
+      return !/^[./]/.test(id);
+    },
+  },
+];
