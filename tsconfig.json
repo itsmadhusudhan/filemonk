@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "allowJs": true,
+    "strict": true,
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "sourceMap": true,
+    "outDir": "lib",
+    "lib": ["ESNext", "dom", "es5"],
+    "skipLibCheck": true,
+    "baseUrl": "."
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["lib", "old-src", "__test__"]
+}

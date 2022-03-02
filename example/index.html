@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>File Monk</title>
+    <script type="text/javascript" src="../lib/filemonk.js"></script>
+  </head>
+  <body>
+    <div id="uploads"></div>
+
+    <input type="file" id="file-input" multiple />
+    <script defer>
+      const app = FileMonk.createApp({
+        maxParallelUploads: 1,
+      });
+
+      const input = document.getElementById("file-input");
+
+      input.onchange = (e) => {
+        console.log(e.target.files);
+
+        const files = Array.from(e.target.files);
+
+        files.forEach((file) => {
+          app.addFile(file, { server: "someURL" });
+        });
+
+        app.processFiles();
+      };
+
+      app.subscribe("DID_COMPLETE_ITEM_PROCESSING_ALL", (d) => console.log(d));
+
+      const uploads = document.getElementById("uploads");
+
+      app.subscribe("STORE_UPDATED", (state) => {
+        const items = state.data.items;
+
+        uploads.innerHTML = "";
+
+        items.map((i) => {
+          const elm = document.createElement("div");
+
+          elm.id = i.id;
+
+          elm.innerHTML = `name: ${i.name} - status: ${i.status} - ${i.progress}`;
+
+          uploads.appendChild(elm);
+
+          return elm;
+        });
+      });
+
+      app.subscribe(
+        "ON_FILE_PROCESS_PROGRESS",
+        ({ data: { id, progress } }) => {
+          const elm = document.getElementById(id);
+
+          console.log(elm.text);
+        }
+      );
+
+      // app.addFile(new File([], "test3"), {
+      //   server: "Somewebsite",
+      // });
+
+      // setTimeout(() => {
+      //   app.addFile(new File([], "test4"), {
+      //     server: "Somewebsite",
+      //   });
+
+      //   app.processFiles();
+      // }, 1000);
+
+      // setTimeout(() => {
+      //   app.addFile(new File([], "test5"), {
+      //     server: "Somewebsite",
+      //   });
+
+      //   app.processFiles();
+      // }, 2000);
+    </script>
+  </body>
+</html>
