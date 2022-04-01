@@ -1,12 +1,40 @@
-import { FileItemEvents, FileItemStatus } from "./app/enum";
+import { AxiosRequestHeaders } from "axios";
 
+// file monk app
 export type FileMonkApp = {
   name: string;
-  addFile: (file: File, server: FileItemServer) => void;
   getState: () => any;
+  addFile: (payload: AddFileType) => void;
+  addFiles: (payload: AddFileType[]) => void;
   subscribe: (event: AppEvents, cb: (data: any) => void) => void;
   subscribeOnce: (event: AppEvents, cb: (data: any) => void) => void;
   processFiles: () => void;
+  unSubscribe: (event: AppEvents, cb: (data: any) => void) => void;
+};
+
+export type AppConfig = {
+  name?: string;
+  maxParallelUploads?: number;
+  server: AppServerConfig;
+};
+
+export type AppServerConfig = {
+  uploadUrl: string;
+  requestHeaders?: AxiosRequestHeaders;
+  method: "POST" | "PATCH";
+};
+
+// Method types
+export type FileItemServer = {
+  config: AppServerConfig;
+  data: { [id: string]: any };
+};
+
+export type AddFileType = {
+  file: File;
+  server: Omit<FileItemServer, "config"> & {
+    config?: AppServerConfig;
+  };
 };
 
 export type EventPayload<E, T> = {
@@ -21,11 +49,6 @@ export interface MonkListener<E, T> {
   unsubscribe: (event: E, cb: any) => void;
 }
 
-export type FileItemServer = {
-  uploadUrl: string;
-  headers?: Object;
-};
-
 export type Getter<T> = { get: () => T };
 
 export type FileItem = {
@@ -34,32 +57,16 @@ export type FileItem = {
   server: Getter<FileItemServer>;
   abortController: Getter<AbortController>;
   status: Getter<FileItemStatus>;
-  process: () => Promise<boolean>;
+  process: (serverConfig: AppConfig["server"]) => Promise<boolean>;
   requestProcessing: () => void;
   progress: Getter<number>;
 } & Omit<MonkListener<FileItemEvents, any>, "emit">;
-
-// Events
-export type StoreActions =
-  | "STORE_UPDATED"
-  | "CREATE_FILE_ITEM"
-  | "PROCESS_FILE_ITEMS"
-  | "PROCESS_FILE_ITEM"
-  | "REQUEST_PROCESS_FILE_ITEM";
-
-export type AppEvents =
-  | "DID_CREATE_ITEM"
-  | "DID_REQUEST_ITEM_PROCESSING"
-  | "DID_PROCESSING_FAILED"
-  | "DID_PROCESSING_COMPLETE"
-  | "DID_COMPLETE_ITEM_PROCESSING_ALL"
-  | StoreActions;
 
 // state
 export type MonkStoreState = {
   items: FileItem[];
   processingQueue: string[];
-  maxParallelUploads: number;
+  appConfig: AppConfig;
 };
 
 export type FileState = {
@@ -71,7 +78,39 @@ export type FileState = {
   progress: number;
 };
 
+export type FileItemStatus =
+  | "IDLE"
+  | "IN_QUEUE"
+  | "UPLOADING"
+  | "UPLOADED"
+  | "FAILED"
+  | "CANCELLED";
+
+// events
+export type FileItemEvents =
+  | "ON_ITEM_UPDATED"
+  | "ON_FILE_PROCESS_START"
+  | "ON_FILE_PROCESS_PROGRESS"
+  | "ON_FILE_PROCESS_COMPLETE"
+  | "ON_FILE_PROCESS_CANCELLED"
+  | "ON_FILE_PROCESS_FAILED";
+
+export type AppEvents =
+  | "DID_CREATE_ITEM"
+  | "DID_REQUEST_ITEM_PROCESSING"
+  | "DID_PROCESSING_ITEM_FAILED"
+  | "DID_PROCESSING_ITEM_COMPLETE"
+  | "DID_COMPLETE_ALL_ITEM_PROCESSING"
+  | "STORE_UPDATED";
+
 // actions
+export type StoreActions =
+  | "CREATE_FILE_ITEM"
+  | "PROCESS_FILE_ITEMS"
+  | "PROCESS_FILE_ITEM"
+  | "REQUEST_PROCESS_FILE_ITEM";
+
+// action handlers
 export type StoreHandlers = {
   CREATE_FILE_ITEM: () => void;
   CREATE_FILE_ITEMS: () => void;

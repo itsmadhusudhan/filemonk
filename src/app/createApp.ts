@@ -1,43 +1,59 @@
-import { FileItem, FileItemServer, FileMonkApp } from "../types";
+import {
+  AddFileType,
+  AppConfig,
+  AppEvents,
+  FileItem,
+  FileMonkApp,
+} from "../types";
 import { createListener } from "./createListener";
 
 import { createStore } from "./createStore";
 import { queries } from "./queries";
 
-export const createApp = (
-  config: {
-    name?: string;
-    maxParallelUploads?: number;
-  } = { maxParallelUploads: 1, name: "fileMonk" }
-): FileMonkApp => {
-  const listener = createListener();
+/**
+ * default app config
+ */
+const initialConfig: AppConfig = {
+  name: "fileMonk",
+  maxParallelUploads: 1,
+  server: {
+    uploadUrl: "/",
+    requestHeaders: {
+      "Content-Type": "multipart/form-data",
+    },
+    method: "POST",
+  },
+};
+
+/**
+ *
+ * @param {AppConfig} config
+ * @returns {FileMonkApp}
+ */
+export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
+  const listener = createListener<AppEvents, any>();
 
   const store = createStore(listener, {
-    maxParallelUploads: config.maxParallelUploads!,
+    ...initialConfig,
+    ...config,
   });
 
   const _getFileItems = () => store.query(queries.GET_IDLE_ITEMS);
 
-  const addFiles = (
-    payload: {
-      file: File;
-      server: FileItemServer;
-    }[]
-  ) => {
+  /**
+   *
+   * @param {AddFileType} payload
+   *
+   */
+  const addFiles = (payload: AddFileType[]) => {
     payload.forEach((p) => {
       store.dispatch("CREATE_FILE_ITEM", p);
     });
   };
 
-  const addFile = (file: File, server: FileItemServer) => {
-    return addFiles([
-      {
-        file,
-        server,
-      },
-    ]);
-  };
+  const addFile = (payload: AddFileType) => addFiles([payload]);
 
+  // file processing
   const _processFile = (item: FileItem) => {
     store.dispatch("REQUEST_PROCESS_FILE_ITEM", item);
   };
@@ -50,11 +66,13 @@ export const createApp = (
 
   const api: FileMonkApp = {
     name: config.name!,
-    addFile,
     getState: store.getState,
+    addFile,
+    addFiles,
+    processFiles,
     subscribe: listener.subscribe,
     subscribeOnce: listener.subscribeOnce,
-    processFiles,
+    unSubscribe: listener.unsubscribe,
   };
 
   return api;

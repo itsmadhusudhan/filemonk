@@ -6,8 +6,8 @@ import {
   StoreActions,
   AppEvents,
   FileItem,
+  FileItemEvents,
 } from "../types";
-import { FileItemEvents } from "./enum";
 import { queries } from "./queries";
 
 export type StoreProp = {
@@ -23,25 +23,25 @@ export type StoreProp = {
 // FIXME: return type
 export const createHandlers = (store: StoreProp): any => {
   const createFileItem = (data: { file: File; server: FileItemServer }) => {
-    const fileItem = createItem(data.file, data.server);
+    const serverConfig = store.query(queries.GET_SERVER_CONFIG);
 
-    fileItem.subscribe(FileItemEvents.ON_ITEM_UPDATED, () => {
+    const fileItem = createItem(data.file, {
+      ...data.server,
+      config: {
+        ...serverConfig,
+        ...data.server.config,
+      },
+    });
+
+    fileItem.subscribe("ON_ITEM_UPDATED", () => {
       store.setState({});
     });
 
-    // fileItem.on("load-progress", (progress) => {
-    //   dispatch("DID_UPDATE_ITEM_LOAD_PROGRESS", { id, progress });
-    // });
-
-    /**
-     * 1. file upload start
-     * 2. file upload complete
-     * 3. file upload failed
-     * 4. file upload cancelled
-     * 5. file process start
-     * 6. file upload progress
-     */
     store.dispatch("DID_CREATE_ITEM", fileItem);
+
+    fileItem.subscribe("ON_FILE_PROCESS_START", () => {
+      store.dispatch("ON_FILE_PROCESS_START", fileItem);
+    });
 
     store.setState({
       items: [...store.getState().items, fileItem],
@@ -68,7 +68,7 @@ export const createHandlers = (store: StoreProp): any => {
         : query;
 
     if (!item) {
-      store.dispatch("DID_PROCESSING_FAILED", {
+      store.dispatch("DID_PROCESSING_ITEM_FAILED", {
         message: "File not found",
         data: query,
       });
@@ -121,19 +121,40 @@ export const createHandlers = (store: StoreProp): any => {
 
     // CHECK for all items complete processing
     // upload file here
-    item.subscribeOnce(FileItemEvents.ON_FILE_PROCESS_COMPLETE, () => {
-      store.dispatch("DID_PROCESSING_COMPLETE", { item: item });
+    item.subscribeOnce("ON_FILE_PROCESS_COMPLETE", () => {
+      store.dispatch("DID_PROCESSING_ITEM_COMPLETE", {
+        item: item,
+        status: "SUCCESS",
+      });
 
       processNext();
 
       const items = store.query(queries.GET_PROCESSED_ITEMS);
 
       if (items.length === store.getState().items.length) {
-        store.dispatch("DID_COMPLETE_ITEM_PROCESSING_ALL", { item: items });
+        store.dispatch("DID_COMPLETE_ALL_ITEM_PROCESSING", { item: items });
       }
     });
 
-    item.process();
+    // when processing failed
+    item.subscribeOnce("ON_FILE_PROCESS_FAILED", () => {
+      store.dispatch("DID_PROCESSING_ITEM_COMPLETE", {
+        item: item,
+        status: "FAILED",
+      });
+
+      processNext();
+
+      const items = store.query(queries.GET_PROCESSED_ITEMS);
+
+      if (items.length === store.getState().items.length) {
+        store.dispatch("DID_COMPLETE_ALL_ITEM_PROCESSING", { item: items });
+      }
+    });
+
+    const serverConfig = store.query(queries.GET_SERVER_CONFIG);
+
+    item.process(serverConfig);
   };
 
   return {

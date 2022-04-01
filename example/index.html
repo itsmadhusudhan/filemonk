@@ -6,60 +6,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>File Monk</title>
     <script type="text/javascript" src="../lib/filemonk.js"></script>
+    <script type="text/javascript" src="./index.js" defer></script>
   </head>
   <body>
     <div id="uploads"></div>
 
     <input type="file" id="file-input" multiple />
+    <!-- <script src="./canvas.js" type="text/javascript"></script> -->
+
     <script defer>
-      const app = FileMonk.createApp({
-        maxParallelUploads: 1,
-      });
+      // const app = FileMonk.createApp({
+      //   maxParallelUploads: 1,
+      // });
 
-      const input = document.getElementById("file-input");
+      // const input = document.getElementById("file-input");
 
-      input.onchange = (e) => {
-        console.log(e.target.files);
+      // input.onchange = (e) => {
+      //   // console.log(e.target.files);
 
-        const files = Array.from(e.target.files);
+      //   const files = Array.from(e.target.files);
 
-        files.forEach((file) => {
-          app.addFile(file, { server: "someURL" });
-        });
+      //   files.forEach((file) => {
+      //     app.addFile({
+      //       file,
+      //       server: {
+      //         data: {
+      //           parentFolderId: "SOME_FOLDER",
+      //         },
+      //       },
+      //     });
+      //   });
 
-        app.processFiles();
-      };
+      //   app.processFiles();
+      // };
 
-      app.subscribe("DID_COMPLETE_ITEM_PROCESSING_ALL", (d) => console.log(d));
+      // app.subscribe("DID_COMPLETE_ITEM_PROCESSING_ALL", (d) => console.log(d));
+      // app.subscribe("DID_PROCESSING_ITEM_COMPLETE", console.log);
 
-      const uploads = document.getElementById("uploads");
+      // const uploads = document.getElementById("uploads");
 
-      app.subscribe("STORE_UPDATED", (state) => {
-        const items = state.data.items;
+      // app.subscribe("STORE_UPDATED", (state) => {
+      //   const items = state.data.items;
 
-        uploads.innerHTML = "";
+      //   uploads.innerHTML = "";
 
-        items.map((i) => {
-          const elm = document.createElement("div");
+      //   items.map((i) => {
+      //     const elm = document.createElement("div");
 
-          elm.id = i.id;
+      //     elm.id = i.id;
 
-          elm.innerHTML = `name: ${i.name} - status: ${i.status} - ${i.progress}`;
+      //     elm.innerHTML = `name: ${i.name} - status: ${i.status} - ${i.progress}`;
 
-          uploads.appendChild(elm);
+      //     uploads.appendChild(elm);
 
-          return elm;
-        });
-      });
+      //     return elm;
+      //   });
+      // });
 
-      app.subscribe(
-        "ON_FILE_PROCESS_PROGRESS",
-        ({ data: { id, progress } }) => {
-          const elm = document.getElementById(id);
+      // app.subscribe(
+      //   "ON_FILE_PROCESS_PROGRESS",
+      //   ({ data: { id, progress } }) => {
+      //     const elm = document.getElementById(id);
 
-          console.log(elm.text);
-        }
-      );
+      //     console.log(elm.text);
+      //   }
+      // );
 
       // app.addFile(new File([], "test3"), {
       //   server: "Somewebsite",

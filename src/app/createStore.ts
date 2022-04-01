@@ -1,27 +1,36 @@
+import { createHandlers } from "./handlers";
+import { createQueryHandlers } from "./queries";
 import {
   AppEvents,
-  FileItemEvents,
   MonkListener,
   MonkStoreState,
   StoreActions,
+  FileItemEvents,
+  AppConfig,
 } from "../types";
-import { createHandlers } from "./handlers";
-import { createQueryHandlers } from "./queries";
 
+/**
+ *
+ * @param {MonkListener} listener
+ * @param {StoreConfig} config
+ * @returns
+ */
 export const createStore = (
-  listener: MonkListener<any, any>,
-  config: { maxParallelUploads: number }
+  listener: MonkListener<AppEvents, any>,
+  config: AppConfig
 ) => {
   let state: MonkStoreState = {
     items: [],
     processingQueue: [],
-    maxParallelUploads: config.maxParallelUploads,
+    appConfig: config,
   };
-  const appActions = [
+
+  const appEvents: AppEvents[] = [
     "DID_CREATE_ITEM",
     "DID_REQUEST_ITEM_PROCESSING",
-    "DID_PROCESSING_COMPLETE",
-    "DID_COMPLETE_ITEM_PROCESSING_ALL",
+    "DID_PROCESSING_ITEM_COMPLETE",
+    "DID_PROCESSING_ITEM_FAILED",
+    "DID_COMPLETE_ALL_ITEM_PROCESSING",
   ];
 
   const getState = () => ({ ...state });
@@ -41,11 +50,12 @@ export const createStore = (
   ) => {
     const handler = actionHandlers[event];
 
-    if (appActions.includes(event))
+    if (appEvents.includes(event as AppEvents)) {
       listener.emit({
-        type: event as StoreActions,
+        type: event as AppEvents,
         data,
       });
+    }
 
     if (handler) {
       handler(data);
@@ -83,5 +93,6 @@ export const createStore = (
     dispatch,
     query,
   };
+
   return api;
 };

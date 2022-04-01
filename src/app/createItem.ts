@@ -1,16 +1,22 @@
-import { FileItemServer, FileState } from "../types";
+import {
+  FileState,
+  FileItemEvents,
+  FileItem,
+  AppConfig,
+  FileItemServer,
+} from "../types";
 import { v4 as uuid } from "uuid";
 import { createListener } from "./createListener";
-import { FileItemEvents, FileItemStatus } from "./enum";
+import axios from "axios";
 
-export const createItem = (file: File, server: FileItemServer) => {
+export const createItem = (file: File, server: FileItemServer): FileItem => {
   const listener = createListener<FileItemEvents, any>();
 
   let state: FileState = {
     id: uuid(),
     file: file,
-    server: server,
-    status: FileItemStatus.IDLE,
+    server,
+    status: "IDLE",
     abortController: new AbortController(),
     progress: 0,
   };
@@ -22,50 +28,100 @@ export const createItem = (file: File, server: FileItemServer) => {
     };
 
     listener.emit({
-      type: FileItemEvents.ON_ITEM_UPDATED,
+      type: "ON_ITEM_UPDATED",
     });
   };
 
   const requestProcessing = () => {
     setState({
-      status: FileItemStatus.IN_QUEUE,
+      status: "IN_QUEUE",
     });
   };
 
-  const process = async () => {
+  const process = async (config: AppConfig["server"]) => {
     setState({
-      status: FileItemStatus.UPLOADING,
+      status: "UPLOADING",
     });
 
     listener.emit({
-      type: FileItemEvents.ON_FILE_PROCESS_START,
+      type: "ON_FILE_PROCESS_START",
     });
 
-    const timer = setInterval(() => {
-      setState({
-        progress: state.progress + 20,
-      });
+    const server = state.server;
 
-      listener.emit({
-        type: FileItemEvents.ON_FILE_PROCESS_PROGRESS,
-        data: {
-          id: state.id,
-          progress: state.progress,
-        },
-      });
+    const formData = new FormData();
 
-      if (state.progress >= 100) {
-        clearInterval(timer);
+    formData.append("file", state.file);
+
+    Object.keys(server.data).forEach((key) => {
+      formData.append(key, server.data[key]);
+    });
+
+    axios(server.config.uploadUrl!, {
+      method: server.config.method,
+      data: formData,
+      onUploadProgress: (progressEvent: ProgressEvent) => {
+        const progress = (progressEvent.loaded / progressEvent.total) * 100;
 
         setState({
-          status: FileItemStatus.UPLOADED,
+          progress,
         });
 
         listener.emit({
-          type: FileItemEvents.ON_FILE_PROCESS_COMPLETE,
+          type: "ON_FILE_PROCESS_PROGRESS",
+          data: {
+            id: state.id,
+            progress: state.progress,
+          },
         });
-      }
-    }, 1000);
+      },
+    })
+      .then((r) => {
+        setState({
+          status: "UPLOADED",
+        });
+
+        listener.emit({
+          type: "ON_FILE_PROCESS_COMPLETE",
+          data: r,
+        });
+      })
+      .catch((e) => {
+        setState({
+          status: "FAILED",
+        });
+
+        listener.emit({
+          type: "ON_FILE_PROCESS_FAILED",
+          data: e,
+        });
+      });
+
+    // const timer = setInterval(() => {
+    //   setState({
+    //     progress: state.progress + 20,
+    //   });
+
+    //   listener.emit({
+    //     type: "ON_FILE_PROCESS_PROGRESS",
+    //     data: {
+    //       id: state.id,
+    //       progress: state.progress,
+    //     },
+    //   });
+
+    //   if (state.progress >= 100) {
+    //     clearInterval(timer);
+
+    //     setState({
+    //       status: "UPLOADED",
+    //     });
+
+    //     listener.emit({
+    //       type: "ON_FILE_PROCESS_COMPLETE",
+    //     });
+    //   }
+    // }, 1000);
 
     return true;
   };

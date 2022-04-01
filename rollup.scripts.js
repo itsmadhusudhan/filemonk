@@ -1,8 +1,5 @@
 import babel from "rollup-plugin-babel";
-// import license from "rollup-plugin-license";
 import { terser } from "rollup-plugin-terser";
-// import prettier from "rollup-plugin-prettier";
-// const banner = require('./banner');
 import esbuild from "rollup-plugin-esbuild";
 import dts from "rollup-plugin-dts";
 import resolve from "rollup-plugin-node-resolve";
@@ -26,7 +23,7 @@ const createBuild = (options) => {
   // collect plugins
   const plugins = [
     resolve({
-      preferBuiltins: false,
+      preferBuiltins: true,
       browser: true,
     }),
   ];
@@ -54,36 +51,37 @@ const createBuild = (options) => {
   // return Rollup config
   return {
     input: "src/index.ts",
-    treeshake: false,
-    output: [
-      {
-        format,
-        name: id,
-        file: filename.join(""),
+    treeshake: true,
+    output: {
+      format,
+      name: id,
+      file: filename.join(""),
+      globals: {
+        axios: "axios",
       },
-    ],
+    },
     plugins,
+    external: [
+      "axios",
+      "http", // imported by axios
+      "https", // imported by axios
+      "url", // imported by follow-redirects
+      "assert", // imported by follow-redirects
+      "stream", // imported by follow-redirects
+      "tty", // imported by follow-redirects
+      "util", // imported by follow-redirects
+      "zlib", // imported by axios
+    ],
   };
 };
 
 export default (metadata, configs) => [
-  ...configs.map((config) => createBuild({ ...metadata, ...config })),
+  // ...configs.map((config) => createBuild({ ...metadata, ...config })),
   {
     plugins: [dts()],
     input: "src/index.ts",
     output: {
-      file: `./index.d.ts`,
-      format: "es",
-    },
-    external: (id) => {
-      return !/^[./]/.test(id);
-    },
-  },
-  {
-    plugins: [dts()],
-    input: "src/types.ts",
-    output: {
-      file: `./index.d.ts`,
+      file: `./lib/index.d.ts`,
       format: "es",
     },
     external: (id) => {
