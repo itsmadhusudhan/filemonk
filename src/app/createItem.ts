@@ -4,12 +4,16 @@ import {
   FileItem,
   AppConfig,
   FileItemServer,
+  InternalFileItem,
 } from "../types";
 import { v4 as uuid } from "uuid";
 import { createListener } from "./createListener";
 import axios from "axios";
 
-export const createItem = (file: File, server: FileItemServer): FileItem => {
+export const createItem = (
+  file: File,
+  server: FileItemServer
+): InternalFileItem => {
   const listener = createListener<FileItemEvents, any>();
 
   let state: FileState = {

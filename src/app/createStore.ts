@@ -1,5 +1,8 @@
 import { createHandlers } from "./handlers";
 import { createQueryHandlers } from "./queries";
+
+import { transformFileItem } from "../utils/transformFileItem";
+
 import {
   AppEvents,
   MonkListener,
@@ -7,6 +10,7 @@ import {
   StoreActions,
   FileItemEvents,
   AppConfig,
+  AppState,
 } from "../types";
 
 /**
@@ -36,10 +40,12 @@ export const createStore = (
   const getState = () => ({ ...state });
 
   const setState = (newState: Partial<MonkStoreState>) => {
-    state = {
-      ...state,
-      ...newState,
-    };
+    // update only if the new state is not an empty object
+    if (Object.keys(newState).length > 0)
+      state = {
+        ...state,
+        ...newState,
+      };
 
     listener.emit({ type: "STORE_UPDATED", data: api.getState() });
   };
@@ -63,7 +69,7 @@ export const createStore = (
   };
 
   const query = (str: any, ...args: any) =>
-    queryHandles[str] ? queryHandles[str](...args) : null;
+    queryHandlers[str] ? queryHandlers[str](...args) : null;
 
   // handlers
   const actionHandlers = createHandlers({
@@ -73,22 +79,16 @@ export const createStore = (
     query,
   });
 
-  const queryHandles = createQueryHandlers({
+  const queryHandlers = createQueryHandlers({
     setState,
     getState,
     dispatch,
   });
 
   const api = {
-    getState: () => ({
+    getState: (): AppState => ({
       ...state,
-      items: state.items.map((i) => ({
-        ...i,
-        status: i.status.get(),
-        progress: i.progress.get(),
-        id: i.id.get(),
-        name: i.file.get().name,
-      })),
+      items: state.items.map(transformFileItem),
     }),
     dispatch,
     query,

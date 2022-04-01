@@ -1,5 +1,16 @@
 import { AxiosRequestHeaders } from "axios";
 
+// state
+export type MonkStoreState = {
+  items: InternalFileItem[];
+  processingQueue: string[];
+  appConfig: AppConfig;
+};
+
+export type AppState = Omit<MonkStoreState, "items"> & {
+  items: FileItem[];
+};
+
 // file monk app
 export type FileMonkApp = {
   name: string;
@@ -9,7 +20,8 @@ export type FileMonkApp = {
   subscribe: (event: AppEvents, cb: (data: any) => void) => void;
   subscribeOnce: (event: AppEvents, cb: (data: any) => void) => void;
   processFiles: () => void;
-  unSubscribe: (event: AppEvents, cb: (data: any) => void) => void;
+  unsubscribe: (event: AppEvents, cb: (data: any) => void) => void;
+  clearApp: () => void;
 };
 
 export type AppConfig = {
@@ -21,7 +33,7 @@ export type AppConfig = {
 export type AppServerConfig = {
   uploadUrl: string;
   requestHeaders?: AxiosRequestHeaders;
-  method: "POST" | "PATCH";
+  method?: "POST" | "PATCH";
 };
 
 // Method types
@@ -51,7 +63,7 @@ export interface MonkListener<E, T> {
 
 export type Getter<T> = { get: () => T };
 
-export type FileItem = {
+export type InternalFileItem = {
   id: Getter<string>;
   file: Getter<File>;
   server: Getter<FileItemServer>;
@@ -62,11 +74,13 @@ export type FileItem = {
   progress: Getter<number>;
 } & Omit<MonkListener<FileItemEvents, any>, "emit">;
 
-// state
-export type MonkStoreState = {
-  items: FileItem[];
-  processingQueue: string[];
-  appConfig: AppConfig;
+export type FileItem = {
+  id: string;
+  file: File;
+  server: FileItemServer;
+  status: FileItemStatus;
+  name: string;
+  progress: number;
 };
 
 export type FileState = {

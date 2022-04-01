@@ -1,3 +1,5 @@
+import { AxiosResponse } from "axios";
+
 import { createItem } from "./createItem";
 
 import {
@@ -5,10 +7,11 @@ import {
   MonkStoreState,
   StoreActions,
   AppEvents,
-  FileItem,
+  InternalFileItem,
   FileItemEvents,
 } from "../types";
 import { queries } from "./queries";
+import { transformFileItem } from "../utils/transformFileItem";
 
 export type StoreProp = {
   getState: () => MonkStoreState;
@@ -37,10 +40,10 @@ export const createHandlers = (store: StoreProp): any => {
       store.setState({});
     });
 
-    store.dispatch("DID_CREATE_ITEM", fileItem);
+    store.dispatch("DID_CREATE_ITEM", transformFileItem(fileItem));
 
     fileItem.subscribe("ON_FILE_PROCESS_START", () => {
-      store.dispatch("ON_FILE_PROCESS_START", fileItem);
+      store.dispatch("ON_FILE_PROCESS_START", transformFileItem(fileItem));
     });
 
     store.setState({
@@ -48,7 +51,7 @@ export const createHandlers = (store: StoreProp): any => {
     });
   };
 
-  const requestProcessFile = (item: FileItem) => {
+  const requestProcessFile = (item: InternalFileItem) => {
     if (item.status.get() === "IN_QUEUE") return;
 
     item.requestProcessing();
@@ -61,7 +64,7 @@ export const createHandlers = (store: StoreProp): any => {
     store.dispatch("PROCESS_FILE_ITEM", { query: item });
   };
 
-  const processFile = ({ query }: { query: string | FileItem }) => {
+  const processFile = ({ query }: { query: string | InternalFileItem }) => {
     const item =
       typeof query === "string"
         ? store.getState().items.find((i) => i.id.get() === query)
@@ -121,20 +124,24 @@ export const createHandlers = (store: StoreProp): any => {
 
     // CHECK for all items complete processing
     // upload file here
-    item.subscribeOnce("ON_FILE_PROCESS_COMPLETE", () => {
-      store.dispatch("DID_PROCESSING_ITEM_COMPLETE", {
-        item: item,
-        status: "SUCCESS",
-      });
+    item.subscribeOnce(
+      "ON_FILE_PROCESS_COMPLETE",
+      (response: AxiosResponse) => {
+        store.dispatch("DID_PROCESSING_ITEM_COMPLETE", {
+          item: transformFileItem(item),
+          status: "SUCCESS",
+          response,
+        });
 
-      processNext();
+        processNext();
 
-      const items = store.query(queries.GET_PROCESSED_ITEMS);
+        const items = store.query(queries.GET_PROCESSED_ITEMS);
 
-      if (items.length === store.getState().items.length) {
-        store.dispatch("DID_COMPLETE_ALL_ITEM_PROCESSING", { item: items });
+        if (items.length === store.getState().items.length) {
+          store.dispatch("DID_COMPLETE_ALL_ITEM_PROCESSING", {});
+        }
       }
-    });
+    );
 
     // when processing failed
     item.subscribeOnce("ON_FILE_PROCESS_FAILED", () => {
@@ -148,7 +155,7 @@ export const createHandlers = (store: StoreProp): any => {
       const items = store.query(queries.GET_PROCESSED_ITEMS);
 
       if (items.length === store.getState().items.length) {
-        store.dispatch("DID_COMPLETE_ALL_ITEM_PROCESSING", { item: items });
+        store.dispatch("DID_COMPLETE_ALL_ITEM_PROCESSING", {});
       }
     });
 

@@ -31,9 +31,9 @@ const initialConfig: AppConfig = {
  * @returns {FileMonkApp}
  */
 export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
-  const listener = createListener<AppEvents, any>();
+  let listener = createListener<AppEvents, any>();
 
-  const store = createStore(listener, {
+  let store = createStore(listener, {
     ...initialConfig,
     ...config,
   });
@@ -64,6 +64,17 @@ export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
     items.map(_processFile);
   };
 
+  const clearApp = () => {
+    // FIXME: need to abort any file operations
+    // recreate the store and listeners
+    listener = createListener<AppEvents, any>();
+
+    store = createStore(listener, {
+      ...initialConfig,
+      ...config,
+    });
+  };
+
   const api: FileMonkApp = {
     name: config.name!,
     getState: store.getState,
@@ -72,7 +83,8 @@ export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
     processFiles,
     subscribe: listener.subscribe,
     subscribeOnce: listener.subscribeOnce,
-    unSubscribe: listener.unsubscribe,
+    unsubscribe: listener.unsubscribe,
+    clearApp,
   };
 
   return api;
