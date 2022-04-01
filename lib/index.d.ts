@@ -1,5 +1,13 @@
 import { AxiosRequestHeaders } from 'axios';
 
+declare type MonkStoreState = {
+    items: InternalFileItem[];
+    processingQueue: string[];
+    appConfig: AppConfig;
+};
+declare type AppState = Omit<MonkStoreState, "items"> & {
+    items: FileItem[];
+};
 declare type FileMonkApp = {
     name: string;
     getState: () => any;
@@ -8,7 +16,8 @@ declare type FileMonkApp = {
     subscribe: (event: AppEvents, cb: (data: any) => void) => void;
     subscribeOnce: (event: AppEvents, cb: (data: any) => void) => void;
     processFiles: () => void;
-    unSubscribe: (event: AppEvents, cb: (data: any) => void) => void;
+    unsubscribe: (event: AppEvents, cb: (data: any) => void) => void;
+    clearApp: () => void;
 };
 declare type AppConfig = {
     name?: string;
@@ -18,7 +27,7 @@ declare type AppConfig = {
 declare type AppServerConfig = {
     uploadUrl: string;
     requestHeaders?: AxiosRequestHeaders;
-    method: "POST" | "PATCH";
+    method?: "POST" | "PATCH";
 };
 declare type FileItemServer = {
     config: AppServerConfig;
@@ -45,7 +54,7 @@ interface MonkListener<E, T> {
 declare type Getter<T> = {
     get: () => T;
 };
-declare type FileItem = {
+declare type InternalFileItem = {
     id: Getter<string>;
     file: Getter<File>;
     server: Getter<FileItemServer>;
@@ -55,10 +64,13 @@ declare type FileItem = {
     requestProcessing: () => void;
     progress: Getter<number>;
 } & Omit<MonkListener<FileItemEvents, any>, "emit">;
-declare type MonkStoreState = {
-    items: FileItem[];
-    processingQueue: string[];
-    appConfig: AppConfig;
+declare type FileItem = {
+    id: string;
+    file: File;
+    server: FileItemServer;
+    status: FileItemStatus;
+    name: string;
+    progress: number;
 };
 declare type FileState = {
     id: string;
@@ -85,4 +97,4 @@ declare type StoreHandlers = {
  */
 declare const createApp: (config?: AppConfig) => FileMonkApp;
 
-export { AddFileType, AppConfig, AppEvents, AppServerConfig, EventPayload, FileItem, FileItemEvents, FileItemServer, FileItemStatus, FileMonkApp, FileState, Getter, MonkListener, MonkStoreState, StoreActions, StoreHandlers, createApp };
+export { AddFileType, AppConfig, AppEvents, AppServerConfig, AppState, EventPayload, FileItem, FileItemEvents, FileItemServer, FileItemStatus, FileMonkApp, FileState, Getter, InternalFileItem, MonkListener, MonkStoreState, StoreActions, StoreHandlers, createApp };
