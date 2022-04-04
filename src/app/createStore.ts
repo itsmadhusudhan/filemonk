@@ -46,8 +46,15 @@ export const createStore = (
         ...newState,
       };
 
-    listener.emit("STORE_UPDATED", api.getState());
+    listener.emit("STORE_UPDATED", _transformState(api.getState()));
   };
+
+  const _transformState=(state:MonkStoreState)=>{
+    return   {
+      ...state,
+      items: state.items.map(transformFileItem),
+    };
+  }
 
   const dispatch = (
     event: FileItemEvents | StoreActions | AppEvents,
