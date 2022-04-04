@@ -124,29 +124,26 @@ export const createHandlers = (store: StoreProp): any => {
 
     // CHECK for all items complete processing
     // upload file here
-    item.subscribeOnce(
-      "ON_FILE_PROCESS_COMPLETE",
-      (response: AxiosResponse) => {
-        store.dispatch("DID_PROCESSING_ITEM_COMPLETE", {
-          item: transformFileItem(item),
-          status: "SUCCESS",
-          response,
-        });
+    item.subscribeOnce("ON_FILE_PROCESS_COMPLETE", (r: any) => {
+      store.dispatch("DID_PROCESSING_ITEM_COMPLETE", {
+        item: transformFileItem(item),
+        status: "SUCCESS",
+        response: r.data as AxiosResponse,
+      });
 
-        processNext();
+      processNext();
 
-        const items = store.query(queries.GET_PROCESSED_ITEMS);
+      const items = store.query(queries.GET_PROCESSED_ITEMS);
 
-        if (items.length === store.getState().items.length) {
-          store.dispatch("DID_COMPLETE_ALL_ITEM_PROCESSING", {});
-        }
+      if (items.length === store.getState().items.length) {
+        store.dispatch("DID_COMPLETE_ALL_ITEM_PROCESSING", {});
       }
-    );
+    });
 
     // when processing failed
     item.subscribeOnce("ON_FILE_PROCESS_FAILED", () => {
       store.dispatch("DID_PROCESSING_ITEM_COMPLETE", {
-        item: item,
+        item: transformFileItem(item),
         status: "FAILED",
       });
 

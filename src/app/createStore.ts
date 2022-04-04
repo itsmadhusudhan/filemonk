@@ -10,7 +10,6 @@ import {
   StoreActions,
   FileItemEvents,
   AppConfig,
-  AppState,
 } from "../types";
 
 /**
@@ -47,7 +46,7 @@ export const createStore = (
         ...newState,
       };
 
-    listener.emit({ type: "STORE_UPDATED", data: api.getState() });
+    listener.emit("STORE_UPDATED", api.getState());
   };
 
   const dispatch = (
@@ -57,10 +56,7 @@ export const createStore = (
     const handler = actionHandlers[event];
 
     if (appEvents.includes(event as AppEvents)) {
-      listener.emit({
-        type: event as AppEvents,
-        data,
-      });
+      listener.emit(event as AppEvents, data);
     }
 
     if (handler) {
@@ -86,9 +82,8 @@ export const createStore = (
   });
 
   const api = {
-    getState: (): AppState => ({
+    getState: () => ({
       ...state,
-      items: state.items.map(transformFileItem),
     }),
     dispatch,
     query,

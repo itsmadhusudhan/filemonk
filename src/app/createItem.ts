@@ -1,7 +1,6 @@
 import {
   FileState,
   FileItemEvents,
-  FileItem,
   AppConfig,
   FileItemServer,
   InternalFileItem,
@@ -31,9 +30,7 @@ export const createItem = (
       ...newState,
     };
 
-    listener.emit({
-      type: "ON_ITEM_UPDATED",
-    });
+    listener.emit("ON_ITEM_UPDATED");
   };
 
   const requestProcessing = () => {
@@ -47,9 +44,7 @@ export const createItem = (
       status: "UPLOADING",
     });
 
-    listener.emit({
-      type: "ON_FILE_PROCESS_START",
-    });
+    listener.emit("ON_FILE_PROCESS_START");
 
     const server = state.server;
 
@@ -71,12 +66,9 @@ export const createItem = (
           progress,
         });
 
-        listener.emit({
-          type: "ON_FILE_PROCESS_PROGRESS",
-          data: {
-            id: state.id,
-            progress: state.progress,
-          },
+        listener.emit("ON_FILE_PROCESS_PROGRESS", {
+          id: state.id,
+          progress: state.progress,
         });
       },
     })
@@ -85,20 +77,14 @@ export const createItem = (
           status: "UPLOADED",
         });
 
-        listener.emit({
-          type: "ON_FILE_PROCESS_COMPLETE",
-          data: r,
-        });
+        listener.emit("ON_FILE_PROCESS_COMPLETE", r);
       })
       .catch((e) => {
         setState({
           status: "FAILED",
         });
 
-        listener.emit({
-          type: "ON_FILE_PROCESS_FAILED",
-          data: e,
-        });
+        listener.emit("ON_FILE_PROCESS_FAILED", e);
       });
 
     // const timer = setInterval(() => {
@@ -130,7 +116,7 @@ export const createItem = (
     return true;
   };
 
-  return {
+  const api = {
     id: { get: () => state.id },
     file: { get: () => state.file },
     abortController: { get: () => state.abortController },
@@ -143,4 +129,6 @@ export const createItem = (
     unsubscribe: listener.unsubscribe,
     subscribeOnce: listener.subscribeOnce,
   };
+
+  return api;
 };

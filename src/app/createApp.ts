@@ -2,9 +2,10 @@ import {
   AddFileType,
   AppConfig,
   AppEvents,
-  FileItem,
   FileMonkApp,
+  InternalFileItem,
 } from "../types";
+import { transformFileItem } from "../utils/transformFileItem";
 import { createListener } from "./createListener";
 
 import { createStore } from "./createStore";
@@ -46,15 +47,13 @@ export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
    *
    */
   const addFiles = (payload: AddFileType[]) => {
-    payload.forEach((p) => {
-      store.dispatch("CREATE_FILE_ITEM", p);
-    });
+    payload.forEach(store.dispatch.bind(null, "CREATE_FILE_ITEM"));
   };
 
   const addFile = (payload: AddFileType) => addFiles([payload]);
 
   // file processing
-  const _processFile = (item: FileItem) => {
+  const _processFile = (item: InternalFileItem) => {
     store.dispatch("REQUEST_PROCESS_FILE_ITEM", item);
   };
 
@@ -77,7 +76,13 @@ export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
 
   const api: FileMonkApp = {
     name: config.name!,
-    getState: store.getState,
+    getState: () => {
+      const state = store.getState();
+      return {
+        ...state,
+        items: state.items.map(transformFileItem),
+      };
+    },
     addFile,
     addFiles,
     processFiles,

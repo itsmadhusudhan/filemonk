@@ -1,6 +1,6 @@
-import { EventPayload, MonkListener } from "../types";
+import { MonkListener } from "../types";
 
-export function createListener<E, T>(): MonkListener<E, T> {
+export function createListener<E, T extends object>(): MonkListener<E, T> {
   let listeners: { event: E; cb: any }[] = [];
 
   const unsubscribe = (event: E, cb: any) => {
@@ -9,14 +9,14 @@ export function createListener<E, T>(): MonkListener<E, T> {
     });
   };
 
-  const emit = (payload: EventPayload<E, T>) => {
+  const emit = (event: E, data?: T) => {
     listeners
-      .filter((listener) => listener.event === payload.type)
+      .filter((listener) => listener.event === event)
       .map((listener) => listener.cb.bind(listener))
       .forEach((cb) =>
         cb({
-          type: payload.type,
-          data: payload.data,
+          type: event,
+          data: data,
         })
       );
   };

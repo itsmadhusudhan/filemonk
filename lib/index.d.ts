@@ -45,8 +45,8 @@ declare type EventPayload<E, T> = {
     type: E;
     data?: T;
 };
-interface MonkListener<E, T> {
-    emit: (payload: EventPayload<E, T>) => void;
+interface MonkListener<E, T extends object> {
+    emit: (event: E, data?: T) => void;
     subscribe: <T>(event: E, cb: T) => void;
     subscribeOnce: (event: E, ...args: any) => void;
     unsubscribe: (event: E, cb: any) => void;
