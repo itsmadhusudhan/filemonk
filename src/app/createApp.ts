@@ -63,15 +63,8 @@ export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
     items.map(_processFile);
   };
 
-  const clearApp = () => {
-    // FIXME: need to abort any file operations
-    // recreate the store and listeners
-    listener = createListener<AppEvents, any>();
-
-    store = createStore(listener, {
-      ...initialConfig,
-      ...config,
-    });
+  const resetAppStore = () => {
+    store.clearStore();
   };
 
   const api: FileMonkApp = {
@@ -89,7 +82,7 @@ export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
     subscribe: listener.subscribe,
     subscribeOnce: listener.subscribeOnce,
     unsubscribe: listener.unsubscribe,
-    clearApp,
+    resetAppStore,
   };
 
   return api;

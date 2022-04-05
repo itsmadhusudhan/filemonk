@@ -11,7 +11,8 @@ import axios from "axios";
 
 export const createItem = (
   file: File,
-  server: FileItemServer
+  server: FileItemServer,
+  context: FileState["context"] = {}
 ): InternalFileItem => {
   const listener = createListener<FileItemEvents, any>();
 
@@ -22,6 +23,7 @@ export const createItem = (
     status: "IDLE",
     abortController: new AbortController(),
     progress: 0,
+    context: context,
   };
 
   const setState = (newState: Partial<FileState>) => {
@@ -71,6 +73,7 @@ export const createItem = (
           progress: state.progress,
         });
       },
+      signal: state.abortController.signal,
     })
       .then((r) => {
         setState({
@@ -87,32 +90,6 @@ export const createItem = (
         listener.emit("ON_FILE_PROCESS_FAILED", e);
       });
 
-    // const timer = setInterval(() => {
-    //   setState({
-    //     progress: state.progress + 20,
-    //   });
-
-    //   listener.emit({
-    //     type: "ON_FILE_PROCESS_PROGRESS",
-    //     data: {
-    //       id: state.id,
-    //       progress: state.progress,
-    //     },
-    //   });
-
-    //   if (state.progress >= 100) {
-    //     clearInterval(timer);
-
-    //     setState({
-    //       status: "UPLOADED",
-    //     });
-
-    //     listener.emit({
-    //       type: "ON_FILE_PROCESS_COMPLETE",
-    //     });
-    //   }
-    // }, 1000);
-
     return true;
   };
 
@@ -123,11 +100,13 @@ export const createItem = (
     server: { get: () => state.server },
     status: { get: () => state.status },
     progress: { get: () => state.progress },
+    context: state.context,
     requestProcessing,
     process,
     subscribe: listener.subscribe,
     unsubscribe: listener.unsubscribe,
     subscribeOnce: listener.subscribeOnce,
+    unsubscribeAll: listener.unsubscribeAll,
   };
 
   return api;

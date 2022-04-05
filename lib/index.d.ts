@@ -17,7 +17,7 @@ declare type FileMonkApp = {
     subscribeOnce: (event: AppEvents, cb: (data: any) => void) => void;
     processFiles: () => void;
     unsubscribe: (event: AppEvents, cb: (data: any) => void) => void;
-    clearApp: () => void;
+    resetAppStore: () => void;
 };
 declare type AppConfig = {
     name?: string;
@@ -40,6 +40,9 @@ declare type AddFileType = {
     server: Omit<FileItemServer, "config"> & {
         config?: AppServerConfig;
     };
+    context?: {
+        [key: string]: any;
+    };
 };
 declare type EventPayload<E, T> = {
     type: E;
@@ -50,6 +53,7 @@ interface MonkListener<E, T extends object> {
     subscribe: <T>(event: E, cb: T) => void;
     subscribeOnce: (event: E, ...args: any) => void;
     unsubscribe: (event: E, cb: any) => void;
+    unsubscribeAll: () => void;
 }
 declare type Getter<T> = {
     get: () => T;
@@ -63,6 +67,9 @@ declare type InternalFileItem = {
     process: (serverConfig: AppConfig["server"]) => Promise<boolean>;
     requestProcessing: () => void;
     progress: Getter<number>;
+    context: {
+        [key: string]: any;
+    };
 } & Omit<MonkListener<FileItemEvents, any>, "emit">;
 declare type FileItem = {
     id: string;
@@ -79,6 +86,9 @@ declare type FileState = {
     abortController: AbortController;
     status: FileItemStatus;
     progress: number;
+    context: {
+        [key: string]: any;
+    };
 };
 declare type FileItemStatus = "IDLE" | "IN_QUEUE" | "UPLOADING" | "UPLOADED" | "FAILED" | "CANCELLED";
 declare type FileItemEvents = "ON_ITEM_UPDATED" | "ON_FILE_PROCESS_START" | "ON_FILE_PROCESS_PROGRESS" | "ON_FILE_PROCESS_COMPLETE" | "ON_FILE_PROCESS_CANCELLED" | "ON_FILE_PROCESS_FAILED";

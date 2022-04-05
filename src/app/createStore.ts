@@ -12,6 +12,11 @@ import {
   AppConfig,
 } from "../types";
 
+const _initialState = {
+  items: [],
+  processingQueue: [],
+};
+
 /**
  *
  * @param {MonkListener} listener
@@ -23,8 +28,7 @@ export const createStore = (
   config: AppConfig
 ) => {
   let state: MonkStoreState = {
-    items: [],
-    processingQueue: [],
+    ..._initialState,
     appConfig: config,
   };
 
@@ -49,12 +53,12 @@ export const createStore = (
     listener.emit("STORE_UPDATED", _transformState(api.getState()));
   };
 
-  const _transformState=(state:MonkStoreState)=>{
-    return   {
+  const _transformState = (state: MonkStoreState) => {
+    return {
       ...state,
       items: state.items.map(transformFileItem),
     };
-  }
+  };
 
   const dispatch = (
     event: FileItemEvents | StoreActions | AppEvents,
@@ -69,6 +73,18 @@ export const createStore = (
     if (handler) {
       handler(data);
     }
+  };
+
+  const clearStore = () => {
+    // FIXME: need to abort any file operations
+
+    // clear all items listeners
+    state.items.forEach((i) => {
+      i.abortController.get().abort();
+      i.unsubscribeAll();
+    });
+
+    setState(_initialState);
   };
 
   const query = (str: any, ...args: any) =>
@@ -94,6 +110,7 @@ export const createStore = (
     }),
     dispatch,
     query,
+    clearStore,
   };
 
   return api;

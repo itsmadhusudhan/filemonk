@@ -9,6 +9,7 @@ import {
   AppEvents,
   InternalFileItem,
   FileItemEvents,
+  AddFileType,
 } from "../types";
 import { queries } from "./queries";
 import { transformFileItem } from "../utils/transformFileItem";
@@ -25,7 +26,7 @@ export type StoreProp = {
 
 // FIXME: return type
 export const createHandlers = (store: StoreProp): any => {
-  const createFileItem = (data: { file: File; server: FileItemServer }) => {
+  const createFileItem = (data: AddFileType) => {
     const serverConfig = store.query(queries.GET_SERVER_CONFIG);
 
     const fileItem = createItem(data.file, {

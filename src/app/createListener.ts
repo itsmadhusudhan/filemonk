@@ -3,6 +3,10 @@ import { MonkListener } from "../types";
 export function createListener<E, T extends object>(): MonkListener<E, T> {
   let listeners: { event: E; cb: any }[] = [];
 
+  const unsubscribeAll = () => {
+    listeners = [];
+  };
+
   const unsubscribe = (event: E, cb: any) => {
     listeners = listeners.filter((listener) => {
       return !(listener.event === event && (listener.cb === cb || !cb));
@@ -40,6 +44,7 @@ export function createListener<E, T extends object>(): MonkListener<E, T> {
     subscribe,
     subscribeOnce,
     unsubscribe,
+    unsubscribeAll,
   };
 
   return api;

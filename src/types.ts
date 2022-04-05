@@ -21,7 +21,7 @@ export type FileMonkApp = {
   subscribeOnce: (event: AppEvents, cb: (data: any) => void) => void;
   processFiles: () => void;
   unsubscribe: (event: AppEvents, cb: (data: any) => void) => void;
-  clearApp: () => void;
+  resetAppStore: () => void;
 };
 
 export type AppConfig = {
@@ -47,6 +47,7 @@ export type AddFileType = {
   server: Omit<FileItemServer, "config"> & {
     config?: AppServerConfig;
   };
+  context?: { [key: string]: any };
 };
 
 export type EventPayload<E, T> = {
@@ -59,6 +60,7 @@ export interface MonkListener<E, T extends object> {
   subscribe: <T>(event: E, cb: T) => void;
   subscribeOnce: (event: E, ...args: any) => void;
   unsubscribe: (event: E, cb: any) => void;
+  unsubscribeAll: () => void;
 }
 
 export type Getter<T> = { get: () => T };
@@ -72,6 +74,7 @@ export type InternalFileItem = {
   process: (serverConfig: AppConfig["server"]) => Promise<boolean>;
   requestProcessing: () => void;
   progress: Getter<number>;
+  context: { [key: string]: any };
 } & Omit<MonkListener<FileItemEvents, any>, "emit">;
 
 export type FileItem = {
@@ -90,6 +93,7 @@ export type FileState = {
   abortController: AbortController;
   status: FileItemStatus;
   progress: number;
+  context: { [key: string]: any };
 };
 
 export type FileItemStatus =
