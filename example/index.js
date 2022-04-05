@@ -7,6 +7,12 @@ const app = FileMonk.createApp({
   },
 });
 const input = document.getElementById("file-input");
+const clearApp = document.getElementById("clear-app");
+
+clearApp.addEventListener("click", () => {
+  app.resetAppStore();
+});
+
 input.onchange = (e) => {
   // console.log(e.target.files);
   const files = Array.from(e.target.files);

@@ -80,7 +80,6 @@ export const createStore = (
 
     // clear all items listeners
     state.items.forEach((i) => {
-      i.abortController.get().abort();
       i.unsubscribeAll();
     });
 

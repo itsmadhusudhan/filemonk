@@ -34,10 +34,12 @@ const initialConfig: AppConfig = {
 export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
   let listener = createListener<AppEvents, any>();
 
-  let store = createStore(listener, {
+  const appConfig = {
     ...initialConfig,
     ...config,
-  });
+  };
+
+  let store = createStore(listener, appConfig);
 
   const _getFileItems = () => store.query(queries.GET_IDLE_ITEMS);
 
@@ -68,7 +70,7 @@ export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
   };
 
   const api: FileMonkApp = {
-    name: config.name!,
+    name: appConfig.name!,
     getState: () => {
       const state = store.getState();
       return {
