@@ -3,7 +3,6 @@ import { AxiosResponse } from "axios";
 import { createItem } from "./createItem";
 
 import {
-  FileItemServer,
   MonkStoreState,
   StoreActions,
   AppEvents,
@@ -29,13 +28,17 @@ export const createHandlers = (store: StoreProp): any => {
   const createFileItem = (data: AddFileType) => {
     const serverConfig = store.query(queries.GET_SERVER_CONFIG);
 
-    const fileItem = createItem(data.file, {
-      ...data.server,
-      config: {
-        ...serverConfig,
-        ...data.server.config,
+    const fileItem = createItem(
+      data.file,
+      {
+        ...data.server,
+        config: {
+          ...serverConfig,
+          ...data.server.config,
+        },
       },
-    });
+      data.context
+    );
 
     fileItem.subscribe("ON_ITEM_UPDATED", () => {
       store.setState({});

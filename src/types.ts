@@ -71,7 +71,7 @@ export type InternalFileItem = {
   server: Getter<FileItemServer>;
   abortController: Getter<AbortController>;
   status: Getter<FileItemStatus>;
-  process: (serverConfig: AppConfig["server"]) => Promise<boolean>;
+  process: (serverConfig: AppConfig["server"]) => Promise<void>;
   requestProcessing: () => void;
   progress: Getter<number>;
   context: { [key: string]: any };

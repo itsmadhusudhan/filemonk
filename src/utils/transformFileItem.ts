@@ -1,7 +1,7 @@
 import { FileItem, InternalFileItem } from "../types";
 
 export const transformFileItem = (item: InternalFileItem): FileItem => {
-  const { file, id, status, progress, server, context } = item;
+  const { file, id, status, progress, server, context = {} } = item;
 
   return {
     file: file.get(),

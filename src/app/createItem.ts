@@ -80,6 +80,10 @@ export const createItem = (
           status: "UPLOADED",
         });
 
+        if (state.context.debug) {
+          console.log(r);
+        }
+
         listener.emit("ON_FILE_PROCESS_COMPLETE", r);
       })
       .catch((e) => {
@@ -89,8 +93,6 @@ export const createItem = (
 
         listener.emit("ON_FILE_PROCESS_FAILED", e);
       });
-
-    return true;
   };
 
   const api = {
