@@ -47,7 +47,7 @@ export type AddFileType = {
   server: Omit<FileItemServer, "config"> & {
     config?: AppServerConfig;
   };
-  context?: { [key: string]: any };
+  context?: FileItem["context"];
 };
 
 export type EventPayload<E, T> = {
@@ -84,6 +84,7 @@ export type FileItem = {
   status: FileItemStatus;
   name: string;
   progress: number;
+  context: { [key: string]: any };
 };
 
 export type FileState = {
@@ -93,7 +94,7 @@ export type FileState = {
   abortController: AbortController;
   status: FileItemStatus;
   progress: number;
-  context: { [key: string]: any };
+  context: FileItem["context"];
 };
 
 export type FileItemStatus =

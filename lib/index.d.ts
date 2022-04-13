@@ -40,9 +40,7 @@ declare type AddFileType = {
     server: Omit<FileItemServer, "config"> & {
         config?: AppServerConfig;
     };
-    context?: {
-        [key: string]: any;
-    };
+    context?: FileItem["context"];
 };
 declare type EventPayload<E, T> = {
     type: E;
@@ -78,6 +76,9 @@ declare type FileItem = {
     status: FileItemStatus;
     name: string;
     progress: number;
+    context: {
+        [key: string]: any;
+    };
 };
 declare type FileState = {
     id: string;
@@ -86,9 +87,7 @@ declare type FileState = {
     abortController: AbortController;
     status: FileItemStatus;
     progress: number;
-    context: {
-        [key: string]: any;
-    };
+    context: FileItem["context"];
 };
 declare type FileItemStatus = "IDLE" | "IN_QUEUE" | "UPLOADING" | "UPLOADED" | "FAILED" | "CANCELLED";
 declare type FileItemEvents = "ON_ITEM_UPDATED" | "ON_FILE_PROCESS_START" | "ON_FILE_PROCESS_PROGRESS" | "ON_FILE_PROCESS_COMPLETE" | "ON_FILE_PROCESS_CANCELLED" | "ON_FILE_PROCESS_FAILED";

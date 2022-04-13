@@ -1,6 +1,6 @@
 {
   "name": "filemonk",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0",
   "description": "Javascript library to upload files to server",
   "main": "lib/filemonk.js",
   "typings": "lib/index.d.ts",
