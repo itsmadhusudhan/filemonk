@@ -75,7 +75,7 @@ export const createHandlers = (store: StoreProp): any => {
         : query;
 
     if (!item) {
-      store.dispatch("DID_PROCESSING_ITEM_FAILED", {
+      store.dispatch("DID_PROCESSING_ITEM_NOT_FOUND", {
         message: "File not found",
         data: query,
       });
