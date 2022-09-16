@@ -31,12 +31,18 @@ const initialConfig: AppConfig = {
  * @param {AppConfig} config
  * @returns {FileMonkApp}
  */
-export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
+export const createApp = (
+  config: Partial<AppConfig> = initialConfig
+): FileMonkApp => {
   let listener = createListener<AppEvents, any>();
 
-  const appConfig = {
+  const appConfig: AppConfig = {
     ...initialConfig,
     ...config,
+    server: {
+      ...initialConfig.server,
+      ...config.server,
+    },
   };
 
   let store = createStore(listener, appConfig);

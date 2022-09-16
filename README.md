@@ -28,7 +28,11 @@ const app = createApp()
 ## createApp with config
 
 ```js
-const app = createApp()
+const app = createApp({
+    server:{
+        uploadUrl:"<SERVER_URL_HERE>"
+    }
+})
 ```
 
 **parameters**
@@ -120,3 +124,5 @@ app.subscribe("STORE_UPDATED",({ type,data }) => {
 - [ ] Improve error handling during file item processing 
 - [ ] Improve events handling
 - [ ] Improve library build config
+- [ ] Remove uuid as dependency
+- [ ] Write tests

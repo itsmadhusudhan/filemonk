@@ -57,11 +57,13 @@ export type EventPayload<E, T> = {
 
 export interface MonkListener<E, T extends object> {
   emit: (event: E, data?: T) => void;
-  subscribe: <T>(event: E, cb: T) => void;
+  subscribe: <D>(event: E, cb: SubscribeCallback<E, D>) => void;
   subscribeOnce: (event: E, ...args: any) => void;
-  unsubscribe: (event: E, cb: any) => void;
+  unsubscribe: (event: E, cb: SubscribeCallback<E, T>) => void;
   unsubscribeAll: () => void;
 }
+
+export type SubscribeCallback<E, D> = (payload: { type: E; data: D }) => void;
 
 export type Getter<T> = { get: () => T };
 

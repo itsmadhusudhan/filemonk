@@ -1,13 +1,13 @@
-import { MonkListener } from "../types";
+import { MonkListener, SubscribeCallback } from "../types";
 
 export function createListener<E, T extends object>(): MonkListener<E, T> {
-  let listeners: { event: E; cb: any }[] = [];
+  let listeners: { event: E; cb: SubscribeCallback<E, any> }[] = [];
 
   const unsubscribeAll = () => {
     listeners = [];
   };
 
-  const unsubscribe = (event: E, cb: any) => {
+  const unsubscribe = (event: E, cb: SubscribeCallback<E, any>) => {
     listeners = listeners.filter((listener) => {
       return !(listener.event === event && (listener.cb === cb || !cb));
     });
@@ -25,7 +25,7 @@ export function createListener<E, T extends object>(): MonkListener<E, T> {
       );
   };
 
-  const subscribe = <T>(event: E, cb: T) => {
+  const subscribe = <T>(event: E, cb: SubscribeCallback<E, T>) => {
     listeners.push({ event, cb });
   };
 

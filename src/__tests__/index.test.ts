@@ -3,8 +3,11 @@ import { createApp } from "../index";
 
 describe("File Monk Creation", () => {
   test("Should be able to create FileMonk App instance with given name", () => {
-    // const app = createApp({ name: "testMonk" });
-    // expect(app.name).toBe("testMonk");
+    const app = createApp({
+      name: "testMonk",
+      server: { uploadUrl: "" },
+    });
+    expect(app.name).toBe("testMonk");
   });
 
   test("Should be able to `addFile` to the app", async () => {
@@ -12,12 +15,13 @@ describe("File Monk Creation", () => {
 
     const spy = jest.spyOn(app, "addFile");
 
-    // app.addFile(new File([], "test file1"), { uploadUrl: "" });
+    app.addFile({ file: new File([], "test file1"), server: { data: {} } });
 
     expect(app.addFile).toBeCalled();
 
     spy.mockRestore();
   });
+
   test("Should be able to receive events when file is added", async () => {
     const app = createApp();
 
@@ -25,9 +29,8 @@ describe("File Monk Creation", () => {
 
     app.subscribeOnce("DID_CREATE_ITEM", mockCallback);
 
-    app.subscribe("STORE_UPDATED", mockCallback);
-
-    // app.addFile(new File([], "test file1"), { uploadUrl: "" });
+    app.subscribeOnce("STORE_UPDATED", mockCallback);
+    app.addFile({ file: new File([], "test file1"), server: { data: {} } });
 
     expect(mockCallback).toBeCalledTimes(2);
   });
