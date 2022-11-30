@@ -1,53 +1,31 @@
 const path = require("path");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
-
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 
-function DtsBundlePlugin() {}
-DtsBundlePlugin.prototype.apply = function (compiler) {
-  compiler.hooks.done.tap("DtsBundlePlugin", (stats) => {
-    const dts = require("dts-bundle");
+const isProduction = process.env.NODE_ENV == "production";
 
-    dts.bundle({
-      name: "FileMonk",
-      main: path.resolve(__dirname, "src/index.ts"),
-      out: path.resolve(__dirname, "lib/index.d.ts"),
-      removeSource: true,
-      outputAsModuleFolder: true,
-    });
-  });
-};
-
-module.exports = {
+const config = {
   context: __dirname,
   entry: {
     filemonk: path.resolve(__dirname, "src/index.ts"),
     "filemonk.min": path.resolve(__dirname, "src/index.ts"),
   },
   output: {
-    path: path.resolve(__dirname, "lib"),
+    path: path.resolve(__dirname, "dist"),
     filename: "[name].js",
-    // library: "FileMonk",
-    // libraryTarget: "umd",
-    // umdNamedDefine: true,
+    libraryTarget: "umd",
+    library: "FileMonk",
+    umdNamedDefine: true,
     clean: true,
-    library: {
-      name: "FileMonk",
-      type: "umd",
-    },
   },
   resolve: {
-    extensions: [".ts", ".js"],
+    extensions: [".tsx", ".ts", ".jsx", ".js", "..."],
   },
-  devtool: "source-map",
   plugins: [
     new ForkTsCheckerWebpackPlugin({
       async: false,
     }),
-    // new DtsBundlePlugin(),
-    // new NpmDtsPlugin({
-    //   entry: "./src/index.ts",
-    // }),
     new CleanWebpackPlugin(),
   ],
   module: {
@@ -57,15 +35,27 @@ module.exports = {
         use: [
           {
             loader: "ts-loader",
-            options: {
-              transpileOnly: true,
-              projectReferences: true,
-            },
+            // options: {
+            //   transpileOnly: true,
+            //   projectReferences: true,
+            // },
           },
         ],
         exclude: /node_modules/,
       },
     ],
   },
+  devtool: "source-map",
+  optimization: {
+    minimize: true,
+    minimizer: [new TerserPlugin()],
+  },
   mode: "production",
+};
+
+module.exports = () => {
+  if (!isProduction) {
+    config.mode = "development";
+  }
+  return config;
 };

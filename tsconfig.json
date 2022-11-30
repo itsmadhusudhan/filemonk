@@ -1,19 +1,21 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "module": "commonjs",
+    "target": "ES5",
+    "lib": ["ES2015", "dom"],
     "outDir": "lib",
-    "declaration": true,
-    "allowJs": true,
-    "strict": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+    "preserveConstEnums": true,
     "sourceMap": true,
-    "lib": ["ESNext", "dom", "es2015"],
-    "skipLibCheck": true,
-    "baseUrl": ".",
-    "module": "commonjs"
+    "declaration": true,
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src/index.ts"],
-  "exclude": ["lib", "old-src", "__test__", "*.test.ts"]
+  "exclude": ["node_modules", "dist", "test/**/*", "*.test.ts", "lib"],
+
+  "compileOnSave": false,
+  "buildOnSave": false
 }

@@ -1,17 +1,110 @@
-// import { createItem } from "../app/createItem";
-// import { FileItemEvents, FileItemStatus } from "../app/enum";
+import { createItem } from "../app/createItem";
+import { FileItemServer } from "../types";
+import { transformFileItem } from "../utils/transformFileItem";
 
-// afterEach(() => {
-//   jest.clearAllTimers();
-// });
+describe("Test createItem creation", () => {
+  // What is a valid file item?
+  it("Should create valid file item", () => {
+    const file = new File([], "file");
+
+    const server: FileItemServer = {
+      config: {
+        uploadUrl: "/uploadfile",
+        method: "POST",
+        requestHeaders: {},
+      },
+      data: {},
+    };
+
+    const fileItem = createItem(file, server);
+
+    // has a unique id
+    expect(fileItem.id.get()).toBeDefined();
+    // Has idle as initial status
+    expect(fileItem.status.get()).toBe("IDLE");
+    // initial progress is 0
+    expect(fileItem.progress.get()).toBe(0);
+    // file item has the file
+    expect(fileItem.file.get()).toBe(file);
+    // file item has the passed server object
+    expect(fileItem.server.get()).toBe(server);
+  });
+
+  it("File item should have the passed context", () => {
+    const file = new File([], "file");
+
+    const server: FileItemServer = {
+      config: {
+        uploadUrl: "/uploadfile",
+        method: "POST",
+        requestHeaders: {},
+      },
+      data: {},
+    };
+
+    const fileItem = createItem(file, server, { parentId: "Home" });
+
+    expect(fileItem.context).toMatchObject({ parentId: "Home" });
+  });
+});
+
+describe("Test file item transformation", () => {
+  // beforeEach(() => {
+  //   jest.mock("uuid");
+
+  //   const uuidSpy = jest.spyOn(require("uuid"), "v4");
+
+  //   uuidSpy.mockReturnValue("6eeb0663-e0bf-4fe2-a509-f6c46549f796");
+  // });
+
+  test("Should return a valid transformed file item", () => {
+    const file = new File([], "file");
+
+    const server: FileItemServer = {
+      config: {
+        uploadUrl: "/uploadfile",
+        method: "POST",
+        requestHeaders: {},
+      },
+      data: {},
+    };
+
+    const fileItem = createItem(file, server);
+
+    const { id, ...result } = transformFileItem(fileItem);
+
+    expect(result).toStrictEqual({
+      file: file,
+      // id: "6eeb0663-e0bf-4fe2-a509-f6c46549f796",
+      name: "file",
+      server: {
+        config: {
+          uploadUrl: "/uploadfile",
+          method: "POST",
+          requestHeaders: {},
+        },
+        data: {},
+      },
+      status: "IDLE",
+      progress: 0,
+      context: {},
+    });
+  });
+});
 
 // describe("Test createItem", () => {
 //   test("Should return a valid fileItem", () => {
-//     const item = createItem(new File([], "test1"), { uploadUrl: "mywebsite" });
+//     const item = createItem(new File([], "test1"), {
+//       config: { uploadUrl: "mywebsite", method: "POST" },
+//       data: {},
+//     });
 
 //     expect(item).toBeTruthy();
 //     expect(item.file.get().name).toBe("test1");
-//     expect(item.server.get()).toMatchObject({ uploadUrl: "mywebsite" });
+//     expect(item.server.get().config).toMatchObject({
+//       uploadUrl: "mywebsite",
+//       method: "POST",
+//     });
 //   });
 // });
 
@@ -78,4 +171,3 @@
 //     expect(mockCallback).toBeCalled();
 //   });
 // });
-export {};

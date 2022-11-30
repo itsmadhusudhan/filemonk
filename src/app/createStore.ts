@@ -12,7 +12,7 @@ import {
   AppConfig,
 } from "../types";
 
-const _initialState = {
+const _initialState: any = {
   items: [],
   processingQueue: [],
 };

@@ -7,7 +7,6 @@ import {
 } from "../types";
 import { transformFileItem } from "../utils/transformFileItem";
 import { createListener } from "./createListener";
-
 import { createStore } from "./createStore";
 import { queries } from "./queries";
 
@@ -71,19 +70,22 @@ export const createApp = (
     items.map(_processFile);
   };
 
+  const getState = () => {
+    const state = store.getState();
+
+    return {
+      ...state,
+      items: state.items.map(transformFileItem),
+    };
+  };
+
   const resetAppStore = () => {
     store.clearStore();
   };
 
   const api: FileMonkApp = {
     name: appConfig.name!,
-    getState: () => {
-      const state = store.getState();
-      return {
-        ...state,
-        items: state.items.map(transformFileItem),
-      };
-    },
+    getState,
     addFile,
     addFiles,
     processFiles,
