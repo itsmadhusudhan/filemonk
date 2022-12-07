@@ -11,6 +11,8 @@ import { createListener } from "./createListener";
 import { createStore } from "./createStore";
 import { queries } from "./queries";
 
+import * as packageJson from "../../package.json";
+
 /**
  * default app config
  */
@@ -85,6 +87,7 @@ export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
     subscribeOnce: listener.subscribeOnce,
     unsubscribe: listener.unsubscribe,
     resetAppStore,
+    version: packageJson.version,
   };
 
   return api;

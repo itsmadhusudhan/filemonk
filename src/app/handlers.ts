@@ -126,9 +126,7 @@ export const createHandlers = (store: StoreProp): any => {
       store.dispatch("PROCESS_FILE_ITEM", { query: itemReference });
     };
 
-    // CHECK for all items complete processing
-    // upload file here
-    item.subscribeOnce("ON_FILE_PROCESS_COMPLETE", (r: any) => {
+    const onSuccess = (r: any) => {
       store.dispatch("DID_PROCESSING_ITEM_COMPLETE", {
         item: transformFileItem(item),
         status: "SUCCESS",
@@ -142,13 +140,16 @@ export const createHandlers = (store: StoreProp): any => {
       if (items.length === store.getState().items.length) {
         store.dispatch("DID_COMPLETE_ALL_ITEM_PROCESSING", {});
       }
-    });
 
-    // when processing failed
-    item.subscribeOnce("ON_FILE_PROCESS_FAILED", () => {
+      // unsubscribe the failure event
+      item.unsubscribe("ON_FILE_PROCESS_FAILED", onFailure);
+    };
+
+    const onFailure = (error: any) => {
       store.dispatch("DID_PROCESSING_ITEM_COMPLETE", {
         item: transformFileItem(item),
         status: "FAILED",
+        error,
       });
 
       processNext();
@@ -158,7 +159,17 @@ export const createHandlers = (store: StoreProp): any => {
       if (items.length === store.getState().items.length) {
         store.dispatch("DID_COMPLETE_ALL_ITEM_PROCESSING", {});
       }
-    });
+
+      // unsubscribe the success event
+      item.unsubscribe("ON_FILE_PROCESS_COMPLETE", onSuccess);
+    };
+
+    // CHECK for all items complete processing
+    // upload file here
+    item.subscribeOnce("ON_FILE_PROCESS_COMPLETE", onSuccess);
+
+    // when processing failed
+    item.subscribeOnce("ON_FILE_PROCESS_FAILED", onFailure);
 
     const serverConfig = store.query(queries.GET_SERVER_CONFIG);
 

@@ -22,6 +22,7 @@ export type FileMonkApp = {
   processFiles: () => void;
   unsubscribe: (event: AppEvents, cb: (data: any) => void) => void;
   resetAppStore: () => void;
+  version: string;
 };
 
 export type AppConfig = {

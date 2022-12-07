@@ -1,3 +1,8 @@
+import { v4 as uuid } from "uuid";
+import axios from "axios";
+
+import { createListener } from "./createListener";
+
 import {
   FileState,
   FileItemEvents,
@@ -5,9 +10,6 @@ import {
   FileItemServer,
   InternalFileItem,
 } from "../types";
-import { v4 as uuid } from "uuid";
-import { createListener } from "./createListener";
-import axios from "axios";
 
 export const createItem = (
   file: File,
@@ -91,6 +93,9 @@ export const createItem = (
           status: "FAILED",
         });
 
+        if (state.context.debug) {
+          console.log(e);
+        }
         listener.emit("ON_FILE_PROCESS_FAILED", e);
       });
   };
