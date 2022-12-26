@@ -11,7 +11,7 @@ export default build(
       format: "umd",
       transpile: true,
       globals: {
-        uuid: "uuid",
+        nanoid: "nanoid",
         axios: "axios",
       },
     },
@@ -21,7 +21,7 @@ export default build(
       minify: true,
       globals: {
         uuid: "uuid",
-        axios: "axios",
+        nanoid: "nanoid",
       },
     },
     {

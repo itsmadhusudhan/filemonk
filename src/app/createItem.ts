@@ -1,5 +1,5 @@
-import { v4 as uuid } from "uuid";
 import axios from "axios";
+import { nanoid } from "nanoid";
 
 import { createListener } from "./createListener";
 
@@ -19,7 +19,7 @@ export const createItem = (
   const listener = createListener<FileItemEvents, any>();
 
   let state: FileState = {
-    id: uuid(),
+    id: nanoid(),
     file: file,
     server,
     status: "IDLE",
@@ -43,26 +43,29 @@ export const createItem = (
     });
   };
 
-  const process = async (config: AppConfig["server"]) => {
+  const process = async (appconfig: AppConfig["server"]) => {
     setState({
       status: "UPLOADING",
     });
 
     listener.emit("ON_FILE_PROCESS_START");
 
-    const server = state.server;
+    const { data, config } = state.server;
 
     const formData = new FormData();
 
     formData.append("file", state.file);
 
-    Object.keys(server.data).forEach((key) => {
-      formData.append(key, server.data[key]);
+    Object.keys(data).forEach((key) => {
+      formData.append(key, data[key]);
     });
 
-    axios(server.config.uploadUrl!, {
-      method: server.config.method,
+    axios(config.uploadUrl!, {
+      method: config.method,
       data: formData,
+      headers: config.requestHeaders,
+      xsrfCookieName: config.xsrfCookieName,
+      xsrfHeaderName: config.xsrfHeaderName,
       onUploadProgress: (progressEvent: ProgressEvent) => {
         const progress = (progressEvent.loaded / progressEvent.total) * 100;
 

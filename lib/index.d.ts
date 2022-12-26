@@ -29,6 +29,8 @@ declare type AppServerConfig = {
     uploadUrl: string;
     requestHeaders?: AxiosRequestHeaders;
     method?: "POST" | "PATCH";
+    xsrfCookieName?: string;
+    xsrfHeaderName?: string;
 };
 declare type FileItemServer = {
     config: AppServerConfig;
@@ -47,9 +49,13 @@ declare type EventPayload<E, T> = {
     type: E;
     data?: T;
 };
+declare type SubscribeCallback<E, D> = (payload: {
+    type: E;
+    data: D;
+}) => void;
 interface MonkListener<E, T extends object> {
     emit: (event: E, data?: T) => void;
-    subscribe: <T>(event: E, cb: T) => void;
+    subscribe: <D>(event: E, cb: SubscribeCallback<E, D>) => void;
     subscribeOnce: (event: E, ...args: any) => void;
     unsubscribe: (event: E, cb: any) => void;
     unsubscribeAll: () => void;
@@ -105,6 +111,6 @@ declare type StoreHandlers = {
  * @param {AppConfig} config
  * @returns {FileMonkApp}
  */
-declare const createApp: (config?: AppConfig) => FileMonkApp;
+declare const createApp: (config?: Partial<AppConfig>) => FileMonkApp;
 
-export { AddFileType, AppConfig, AppEvents, AppServerConfig, AppState, EventPayload, FileItem, FileItemEvents, FileItemServer, FileItemStatus, FileMonkApp, FileState, Getter, InternalFileItem, MonkListener, MonkStoreState, StoreActions, StoreHandlers, createApp };
+export { AddFileType, AppConfig, AppEvents, AppServerConfig, AppState, EventPayload, FileItem, FileItemEvents, FileItemServer, FileItemStatus, FileMonkApp, FileState, Getter, InternalFileItem, MonkListener, MonkStoreState, StoreActions, StoreHandlers, SubscribeCallback, createApp };

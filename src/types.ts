@@ -35,6 +35,8 @@ export type AppServerConfig = {
   uploadUrl: string;
   requestHeaders?: AxiosRequestHeaders;
   method?: "POST" | "PATCH";
+  xsrfCookieName?: string;
+  xsrfHeaderName?: string;
 };
 
 // Method types
@@ -56,9 +58,11 @@ export type EventPayload<E, T> = {
   data?: T;
 };
 
+export type SubscribeCallback<E, D> = (payload: { type: E; data: D }) => void;
+
 export interface MonkListener<E, T extends object> {
   emit: (event: E, data?: T) => void;
-  subscribe: <T>(event: E, cb: T) => void;
+  subscribe: <D>(event: E, cb: SubscribeCallback<E, D>) => void;
   subscribeOnce: (event: E, ...args: any) => void;
   unsubscribe: (event: E, cb: any) => void;
   unsubscribeAll: () => void;

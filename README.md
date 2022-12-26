@@ -22,7 +22,11 @@ To install specific version
 ## createApp
 
 ```js
-const app = createApp()
+const app = createApp({
+    server:{
+        uploadUrl:"<SERVER_URL_HERE>"
+    }
+})
 ```
 
 ## createApp with config
@@ -120,3 +124,5 @@ app.subscribe("STORE_UPDATED",({ type,data }) => {
 - [ ] Improve error handling during file item processing 
 - [ ] Improve events handling
 - [ ] Improve library build config
+- [x] Remove uuid as dependency
+- [ ] Write tests

@@ -1,6 +1,6 @@
 {
   "name": "filemonk",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Javascript library to upload files to server",
   "main": "lib/filemonk.js",
   "typings": "lib/index.d.ts",
@@ -51,7 +51,7 @@
     "axios": "^0.26.0",
     "date-fns": "^2.28.0",
     "dts-bundle": "^0.7.3",
-    "uuid": "^8.3.2"
+    "nanoid": "^4.0.0"
   },
   "engines": {
     "node": ">=12.0.0"

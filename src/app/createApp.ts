@@ -13,6 +13,9 @@ import { queries } from "./queries";
 
 import * as packageJson from "../../package.json";
 
+const CSRF_COOKIE_NAME = "csrf_token";
+const CSRF_TOKEN_NAME = "X-CSRF-Token";
+
 /**
  * default app config
  */
@@ -25,6 +28,8 @@ const initialConfig: AppConfig = {
       "Content-Type": "multipart/form-data",
     },
     method: "POST",
+    xsrfCookieName: CSRF_COOKIE_NAME,
+    xsrfHeaderName: CSRF_TOKEN_NAME,
   },
 };
 
@@ -33,12 +38,18 @@ const initialConfig: AppConfig = {
  * @param {AppConfig} config
  * @returns {FileMonkApp}
  */
-export const createApp = (config: AppConfig = initialConfig): FileMonkApp => {
+export const createApp = (
+  config: Partial<AppConfig> = initialConfig
+): FileMonkApp => {
   let listener = createListener<AppEvents, any>();
 
   const appConfig = {
     ...initialConfig,
     ...config,
+    server: {
+      ...initialConfig.server,
+      ...config.server,
+    },
   };
 
   let store = createStore(listener, appConfig);
